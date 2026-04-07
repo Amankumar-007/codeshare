@@ -1,7 +1,7 @@
-import React, { useState, useRef, useEffect } from 'react';
+import React, { useState, useRef } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
 import axios from 'axios';
-import { User, Mail, Lock, ArrowRight, Globe, Terminal, Users, Sparkles, CheckCircle2 } from 'lucide-react';
+import { User, Mail, Lock, ArrowRight, Globe, CheckCircle2, Users, Sparkles } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 import gsap from 'gsap';
 import { useGSAP } from '@gsap/react';
@@ -89,7 +89,7 @@ export default function Auth() {
                     Secure access to your <span className="text-emerald-500">Workspace</span>.
                   </h2>
                   <p className="text-zinc-400 text-lg">Your scripts, your team, all in one high-performance environment.</p>
-                  
+
                   <div className="flex gap-2">
                     {[1, 2, 3].map(i => (
                       <div key={i} className="w-8 h-1 rounded-full bg-emerald-500/20" />
@@ -127,10 +127,10 @@ export default function Auth() {
                   <div className="flex flex-col gap-4 mt-8">
                     <button className="flex items-center gap-3 bg-white hover:bg-zinc-100 text-black px-8 py-4 rounded-2xl font-bold transition-all hover:scale-[1.02] active:scale-95 shadow-xl shadow-white/5 group w-fit">
                       <svg className="w-5 h-5" viewBox="0 0 24 24">
-                        <path fill="#4285F4" d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z"/>
-                        <path fill="#34A853" d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z"/>
-                        <path fill="#FBBC05" d="M5.84 14.1c-.22-.66-.35-1.36-.35-2.1s.13-1.44.35-2.1V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l3.66-2.83z"/>
-                        <path fill="#EA4335" d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.83c.87-2.6 3.3-4.52 6.16-4.52z"/>
+                        <path fill="#4285F4" d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z" />
+                        <path fill="#34A853" d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z" />
+                        <path fill="#FBBC05" d="M5.84 14.1c-.22-.66-.35-1.36-.35-2.1s.13-1.44.35-2.1V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l3.66-2.83z" />
+                        <path fill="#EA4335" d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.83c.87-2.6 3.3-4.52 6.16-4.52z" />
                       </svg>
                       <span>Get started with Google</span>
                     </button>
@@ -162,9 +162,12 @@ export default function Auth() {
           <div className="absolute right-[-20%] bottom-[-20%] w-[400px] h-[400px] bg-emerald-500/5 rounded-full blur-[100px] pointer-events-none" />
         </div>
 
-        {/* Form Pane */}
-        <div className={`p-8 md:p-16 flex flex-col justify-center transition-all duration-700 ${isLogin ? 'order-2' : 'order-1'} bg-[#18181B]`}>
-          <div className="max-w-md mx-auto w-full">
+        {/* Form Pane - Removed justify-center, added overflow-y-auto to fix clipping */}
+        <div className={`p-8 md:p-16 flex flex-col overflow-y-auto transition-all duration-700 ${isLogin ? 'order-2' : 'order-1'} bg-[#18181B]`}>
+
+          {/* Added my-auto so it naturally centers itself vertically ONLY when there is safe space */}
+          <div className="max-w-md mx-auto w-full my-auto">
+
             <div className="lg:hidden mb-12">
               <Link to="/" className="flex items-center gap-2 text-2xl font-bold text-white" style={{ fontFamily: "'Comfortaa', sans-serif", letterSpacing: '-0.03em' }}>
                 SnIPPETX
@@ -267,18 +270,22 @@ export default function Auth() {
                 </div>
               </div>
 
-              <button
-                type="submit"
-                disabled={loading}
-                className="stagger-item w-full bg-emerald-500 hover:bg-emerald-400 text-black py-4 rounded-2xl font-bold flex items-center justify-center gap-2 group transition-all active:scale-[0.98] shadow-lg shadow-emerald-500/10 mt-6"
-              >
-                {loading ? 'Processing...' : (isLogin ? 'Sign In' : 'Create Account')}
-                <ArrowRight className="w-5 h-5 group-hover:translate-x-1 transition-transform" />
-              </button>
+              {/* FIX: The button is separated into a div wrapper for the GSAP stagger. */}
+              {/* This stops GSAP from conflicting with Tailwind's "transition-all" class */}
+              <div className="stagger-item mt-6">
+                <button
+                  type="submit"
+                  disabled={loading}
+                  className="w-full bg-emerald-500 hover:bg-emerald-400 text-black py-4 rounded-2xl font-bold flex items-center justify-center gap-2 group transition-all active:scale-[0.98] shadow-lg shadow-emerald-500/10"
+                >
+                  {loading ? 'Processing...' : (isLogin ? 'Sign In' : 'Create Account')}
+                  <ArrowRight className="w-5 h-5 group-hover:translate-x-1 transition-transform" />
+                </button>
+              </div>
             </form>
 
             {isLogin && (
-              <div className="stagger-item mt-4 pt-6 border-t border-zinc-800/50 text-center">
+              <div className="stagger-item mt-6 pt-6 border-t border-zinc-800/50 text-center">
                 <div className="relative mb-6">
                   <div className="absolute inset-0 flex items-center"><div className="w-full border-t border-zinc-800/50"></div></div>
                   <div className="relative flex justify-center text-[10px] uppercase font-bold tracking-[0.2em] text-zinc-600"><span className="bg-[#18181B] px-3">Quick Connect</span></div>
@@ -287,10 +294,10 @@ export default function Auth() {
                 <div className="flex justify-center">
                   <button className="flex items-center gap-3 bg-white hover:bg-zinc-100 text-black px-8 py-3 rounded-2xl font-bold transition-all hover:scale-105 active:scale-95 shadow-xl shadow-white/5 group">
                     <svg className="w-5 h-5" viewBox="0 0 24 24">
-                      <path fill="#4285F4" d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z"/>
-                      <path fill="#34A853" d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z"/>
-                      <path fill="#FBBC05" d="M5.84 14.1c-.22-.66-.35-1.36-.35-2.1s.13-1.44.35-2.1V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l3.66-2.83z"/>
-                      <path fill="#EA4335" d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.83c.87-2.6 3.3-4.52 6.16-4.52z"/>
+                      <path fill="#4285F4" d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z" />
+                      <path fill="#34A853" d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z" />
+                      <path fill="#FBBC05" d="M5.84 14.1c-.22-.66-.35-1.36-.35-2.1s.13-1.44.35-2.1V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l3.66-2.83z" />
+                      <path fill="#EA4335" d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.83c.87-2.6 3.3-4.52 6.16-4.52z" />
                     </svg>
                     <span>Google</span>
                   </button>

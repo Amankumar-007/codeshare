@@ -88,14 +88,14 @@ export default function CodeShareBento() {
         <div className="flex items-center gap-4">
           {currentUser ? (
             <div className="flex items-center gap-4">
-              <Link 
+              <Link
                 to={`/profile/${currentUser.username}`}
                 className="w-9 h-9 rounded-full flex items-center justify-center text-xs font-bold border border-zinc-800 hover:border-emerald-500 transition-all hover:scale-105 shadow-lg shadow-emerald-500/10"
                 style={{ backgroundColor: currentUser.avatarColor }}
               >
                 {(currentUser.username || '??').slice(0, 2).toUpperCase()}
               </Link>
-              <button 
+              <button
                 onClick={handleStartSession}
                 className="bg-white text-black px-4 py-2 rounded-lg text-sm font-bold hover:bg-zinc-200 transition-all active:scale-95 shadow-lg shadow-white/5"
               >
@@ -104,13 +104,13 @@ export default function CodeShareBento() {
             </div>
           ) : (
             <div className="flex items-center gap-4">
-              <button 
+              <button
                 onClick={() => navigate('/auth')}
                 className="text-sm font-medium text-zinc-300 hover:text-white"
               >
                 Log in
               </button>
-              <button 
+              <button
                 onClick={handleStartSession}
                 className="bg-white text-black px-4 py-2 rounded-lg text-sm font-bold hover:bg-zinc-200 transition-all active:scale-95 shadow-lg shadow-white/5"
               >
@@ -141,7 +141,7 @@ export default function CodeShareBento() {
               A high-performance environment for technical interviews, pair programming, and rapid prototyping.
             </p>
             <div className="flex gap-4">
-              <button 
+              <button
                 onClick={handleStartSession}
                 className="bg-emerald-500 hover:bg-emerald-400 text-black px-6 py-3 rounded-xl font-bold flex items-center gap-2 transition-colors active:scale-95"
               >
@@ -188,7 +188,7 @@ export default function CodeShareBento() {
         </div>
 
         {/* Vertical CTA Button - spans 1 col */}
-        <div 
+        <div
           onClick={handleStartSession}
           className="bento-item hidden lg:flex lg:col-span-1 bg-zinc-800 border border-zinc-700 rounded-[32px] flex-col items-center justify-between py-10 cursor-pointer hover:bg-emerald-500 hover:border-emerald-400 transition-colors group active:scale-95"
         >
@@ -307,10 +307,10 @@ export default function CodeShareBento() {
 
       </main>
 
-      <SectionModal 
-        isOpen={isModalOpen} 
-        onClose={() => setIsModalOpen(false)} 
-        user={currentUser} 
+      <SectionModal
+        isOpen={isModalOpen}
+        onClose={() => setIsModalOpen(false)}
+        user={currentUser}
       />
     </div>
   );
