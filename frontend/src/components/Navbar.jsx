@@ -53,9 +53,8 @@ export default function Navbar({ id, onIdChange, language, onLangChange, expiry,
   return (
     <nav className="h-16 flex items-center justify-between px-6 border-b border-gray-800 bg-[#0d1117] text-white z-50 shadow-sm transition-all">
       <div className="flex items-center gap-4">
-        <Link to="/" className="text-xl font-bold bg-gradient-to-r from-blue-500 to-purple-500 bg-clip-text text-transparent hover:opacity-80 transition-opacity flex items-center gap-2">
-          <Code className="w-6 h-6 text-blue-500" />
-          TextDrop
+        <Link to="/" className="text-2xl font-bold text-white hover:opacity-90 transition-opacity flex items-center gap-2" style={{ fontFamily: "'Comfortaa', sans-serif", letterSpacing: '-0.03em' }}>
+          SnIPPETX
         </Link>
         <div className="h-6 w-px bg-gray-700 mx-1" />
 
@@ -98,89 +97,96 @@ export default function Navbar({ id, onIdChange, language, onLangChange, expiry,
       </div>
 
       <div className="flex items-center gap-3">
-        <LangSelector current={language} onChange={onLangChange} />
-        <ExpiryMenu current={expiry} onChange={onExpiryChange} />
+        {id !== "profile" && (
+          <>
+            <LangSelector current={language} onChange={onLangChange} />
+            <ExpiryMenu current={expiry} onChange={onExpiryChange} />
+          </>
+        )}
 
         <div className="h-6 w-px bg-gray-700 mx-1" />
 
-        <div className="flex -space-x-2 mr-2">
-          {users?.map(u => (
-            <div
-              key={u.id}
-              className="w-8 h-8 rounded-full border-2 border-[#0d1117] flex items-center justify-center text-[10px] font-bold shadow-lg ring-2 ring-blue-500/10 cursor-help"
-              style={{ backgroundColor: u.color }}
-              title={u.username}
+        {id !== "profile" && (
+          <>
+            <div className="flex -space-x-2 mr-2">
+              {users?.map(u => (
+                <div
+                  key={u.id}
+                  className="w-8 h-8 rounded-full border-2 border-[#0d1117] flex items-center justify-center text-[10px] font-bold shadow-lg ring-2 ring-blue-500/10 cursor-help"
+                  style={{ backgroundColor: u.color }}
+                  title={u.username}
+                >
+                  {(u.username || '??').slice(-2).toUpperCase()}
+                </div>
+              ))}
+            </div>
+
+            <div className="flex items-center gap-1 mr-2 min-w-[80px]">
+              {isSyncing ? (
+                <div className="flex items-center gap-1.5 text-[10px] font-bold text-blue-400 animate-pulse">
+                  <div className="w-1 h-1 bg-blue-400 rounded-full" />
+                  SYNCING...
+                </div>
+              ) : (
+                <div className="flex items-center gap-1.5 text-[10px] font-bold text-gray-500">
+                  <div className="w-1 h-1 bg-gray-600 rounded-full" />
+                  SAVED
+                </div>
+              )}
+            </div>
+
+            <button
+              onClick={onEmbed}
+              title="Embed Code"
+              className="p-2 hover:bg-gray-800 rounded-lg transition-colors bg-gray-800/50 border border-gray-700/50 group"
             >
-              {(u.username || '??').slice(-2).toUpperCase()}
-            </div>
-          ))}
-        </div>
+              <Code className="w-4 h-4 text-orange-400 group-hover:scale-110 transition-transform" />
+            </button>
 
-        <div className="flex items-center gap-1 mr-2 min-w-[80px]">
-          {isSyncing ? (
-            <div className="flex items-center gap-1.5 text-[10px] font-bold text-blue-400 animate-pulse">
-              <div className="w-1 h-1 bg-blue-400 rounded-full" />
-              SYNCING...
-            </div>
-          ) : (
-            <div className="flex items-center gap-1.5 text-[10px] font-bold text-gray-500">
-              <div className="w-1 h-1 bg-gray-600 rounded-full" />
-              SAVED
-            </div>
-          )}
-        </div>
+            <button
+              onClick={copyLink}
+              title="Copy Link"
+              className="p-2 hover:bg-gray-800 rounded-lg transition-colors bg-gray-800/50 border border-gray-700/50 group"
+            >
+              <Share2 className="w-4 h-4 text-blue-400 group-hover:scale-110 transition-transform" />
+            </button>
 
-        <button
-          onClick={onEmbed}
-          title="Embed Code"
-          className="p-2 hover:bg-gray-800 rounded-lg transition-colors bg-gray-800/50 border border-gray-700/50 group"
-        >
-          <Code className="w-4 h-4 text-orange-400 group-hover:scale-110 transition-transform" />
-        </button>
+            <button
+              onClick={onFork}
+              title="Fork Snippet"
+              className="px-3 py-2 flex items-center gap-2 bg-gray-800/50 hover:bg-gray-800 border border-gray-700/50 rounded-lg text-sm font-medium transition-all group"
+            >
+              <GitFork className="w-4 h-4 text-purple-400 group-hover:rotate-12 transition-transform" />
+              Fork
+            </button>
 
-        <button
-          onClick={copyLink}
-          title="Copy Link"
-          className="p-2 hover:bg-gray-800 rounded-lg transition-colors bg-gray-800/50 border border-gray-700/50 group"
-        >
-          <Share2 className="w-4 h-4 text-blue-400 group-hover:scale-110 transition-transform" />
-        </button>
+            <div className="h-6 w-px bg-gray-700 mx-1" />
 
-        <button
-          onClick={onFork}
-          title="Fork Snippet"
-          className="px-3 py-2 flex items-center gap-2 bg-gray-800/50 hover:bg-gray-800 border border-gray-700/50 rounded-lg text-sm font-medium transition-all group"
-        >
-          <GitFork className="w-4 h-4 text-purple-400 group-hover:rotate-12 transition-transform" />
-          Fork
-        </button>
+            <button
+              onClick={onRun}
+              className="px-4 py-2 flex items-center gap-2 bg-emerald-600 hover:bg-emerald-700 rounded-lg text-sm font-bold transition-all shadow-lg shadow-emerald-900/20 active:scale-95 group"
+            >
+              <Play className="w-4 h-4 fill-current group-hover:scale-110 transition-transform" />
+              Run
+            </button>
 
-        <div className="h-6 w-px bg-gray-700 mx-1" />
-
-        <button
-          onClick={onRun}
-          className="px-4 py-2 flex items-center gap-2 bg-emerald-600 hover:bg-emerald-700 rounded-lg text-sm font-bold transition-all shadow-lg shadow-emerald-900/20 active:scale-95 group"
-        >
-          <Play className="w-4 h-4 fill-current group-hover:scale-110 transition-transform" />
-          Run
-        </button>
-
-        <button
-          onClick={onSave}
-          disabled={saving}
-          className={`px-4 py-2 flex items-center gap-2 rounded-lg text-sm font-medium transition-all shadow-lg ${saving ? 'bg-gray-700 border border-gray-600 cursor-not-allowed opacity-50' : 'bg-blue-600 hover:bg-blue-700 hover:shadow-blue-500/20 active:scale-95'
-            }`}
-        >
-          <Save className={`w-4 h-4 ${saving ? 'animate-spin' : ''}`} />
-          {saving ? 'Saving...' : 'Save'}
-        </button>
+            <button
+              onClick={onSave}
+              disabled={saving}
+              className={`px-4 py-2 flex items-center gap-2 rounded-lg text-sm font-medium transition-all shadow-lg ${saving ? 'bg-gray-700 border border-gray-600 cursor-not-allowed opacity-50' : 'bg-blue-600 hover:bg-blue-700 hover:shadow-blue-500/20 active:scale-95'}`}
+            >
+              <Save className={`w-4 h-4 ${saving ? 'animate-spin' : ''}`} />
+              {saving ? 'Saving...' : 'Save'}
+            </button>
+          </>
+        )}
 
         <div className="h-6 w-px bg-gray-700 mx-1" />
 
         {currentUser ? (
           <div className="flex items-center gap-3 ml-2">
             <Link
-              to={`/@${currentUser.username}`}
+              to={`/profile/${currentUser.username}`}
               className="w-9 h-9 rounded-full flex items-center justify-center text-xs font-bold border border-gray-700 hover:border-blue-500 transition-all hover:scale-105 active:scale-95 shadow-lg shadow-blue-500/10"
               style={{ backgroundColor: currentUser.avatarColor }}
               title={`View ${currentUser.username}'s profile`}

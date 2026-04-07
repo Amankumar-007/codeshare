@@ -6,6 +6,11 @@ const UserSchema = new mongoose.Schema({
   email: { type: String, required: true, unique: true, lowercase: true, trim: true },
   passwordHash: { type: String, required: true },
   bio: { type: String, default: '' },
+  skills: { type: [String], default: [] },
+  location: { type: String, default: '' },
+  website: { type: String, default: '' },
+  github: { type: String, default: '' },
+  twitter: { type: String, default: '' },
   avatarColor: { type: String, default: '#3b82f6' },
   createdAt: { type: Date, default: Date.now }
 });

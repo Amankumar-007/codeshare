@@ -57,7 +57,7 @@ export default function Editor({ value, onChange, language = 'javascript' }) {
     <div className="relative group h-full">
       <CodeMirror
         value={value}
-        height="calc(100vh - 64px)" 
+        height="calc(101vh - 110px)"
         theme={oneDark}
         extensions={[extension]}
         onChange={(val) => onChange(val)}

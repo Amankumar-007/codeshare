@@ -4,6 +4,12 @@ const SnippetSchema = new mongoose.Schema({
   id: { type: String, required: true, unique: true },
   content: { type: String, default: '' },
   language: { type: String, default: 'javascript' },
+  files: [{
+    id: { type: String, default: () => Math.random().toString(36).substr(2, 9) },
+    name: { type: String, default: 'main.js' },
+    content: { type: String, default: '' },
+    language: { type: String, default: 'javascript' }
+  }],
   title: { type: String, default: 'Untitled Snippet' },
   author: { type: mongoose.Schema.Types.ObjectId, ref: 'User' },
   visibility: { type: String, enum: ['public', 'unlisted', 'private'], default: 'public' },
