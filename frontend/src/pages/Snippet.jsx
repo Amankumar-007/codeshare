@@ -96,11 +96,13 @@ export default function Snippet() {
       } catch (e) {
         if (e.response?.status === 404) {
           if (isMounted) {
-            setIsNotFound(true);
+            // Treat 404 as a new Ad-hoc workspace
             setLoading(false);
+            console.log("Initializing New Ad-hoc Workspace:", id);
           }
         } else {
           console.error('Error fetching snippet:', e);
+          if (isMounted) setLoading(false);
         }
       }
     };

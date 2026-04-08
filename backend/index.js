@@ -303,7 +303,7 @@ app.patch('/api/snippets/:id', async (req, res) => {
     const snippet = await Snippet.findOneAndUpdate(
       { id: req.params.id },
       { $set: req.body },
-      { new: true, upsert: true }
+      { returnDocument: 'after', upsert: true }
     );
 
     // --- Reset Sync Timer if Expiry Changed ---
@@ -366,7 +366,10 @@ const EXEC_LANGS = {
   go: { codex: 'go', judge: 60, piston: 'go' },
   ruby: { judge: 72, piston: 'ruby' },
   csharp: { codex: 'cs', judge: 51, piston: 'csharp' },
-  sql: { judge: 82, piston: 'sql' }
+  sql: { judge: 82, piston: 'sql' },
+  json: {},
+  markdown: {},
+  text: {}
 };
 
 app.post('/api/execute', async (req, res) => {

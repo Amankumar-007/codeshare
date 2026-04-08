@@ -17,6 +17,7 @@ const LANGUAGES = [
   { id: 'sql', label: 'SQL', color: 'text-green-400' },
   { id: 'json', label: 'JSON', color: 'text-yellow-500' },
   { id: 'markdown', label: 'Markdown', color: 'text-gray-400' },
+  { id: 'text', label: 'Plain Text', color: 'text-gray-500' },
 ];
 
 export default function LangSelector({ current, onChange }) {
