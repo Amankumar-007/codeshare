@@ -5,6 +5,14 @@ const mongoose = require('mongoose');
 const cors = require('cors');
 require('dotenv').config();
 const { nanoid } = require('nanoid');
+const cloudinary = require('cloudinary').v2;
+cloudinary.config({
+  cloud_name: process.env.CLOUDINARY_CLOUD_NAME,
+  api_key: process.env.CLOUDINARY_API_KEY,
+  api_secret: process.env.CLOUDINARY_API_SECRET
+});
+const cloudinaryUploader = cloudinary.uploader;
+const jwt = require('jsonwebtoken');
 
 const Snippet = require('./models/Snippet');
 const User = require('./models/User');
@@ -55,6 +63,7 @@ wss.on('connection', async (ws, req) => {
       files: existing?.files && existing?.files.length > 0
         ? existing.files
         : [{ id: nanoid(5), name: 'main.js', content: existing?.content || '', language: existing?.language || 'javascript' }],
+      uploads: existing?.uploads || [],
       participants: new Set(),
       timer: null
     };
@@ -94,7 +103,7 @@ wss.on('connection', async (ws, req) => {
     });
   };
 
-  ws.send(JSON.stringify({ type: 'init', files: room.files }));
+  ws.send(JSON.stringify({ type: 'init', files: room.files, uploads: room.uploads }));
   broadcastPresence();
 
   ws.on('message', (message) => {
@@ -135,6 +144,66 @@ wss.on('connection', async (ws, req) => {
             client.send(JSON.stringify({ type: 'tab_sync', ...data }));
           }
         });
+      } else if (data.type === 'image_upload') {
+        const { token, imageData, name } = data;
+        
+        // 1. Verify Authentication
+        try {
+          const decoded = jwt.verify(token, process.env.JWT_SECRET || 'secret');
+          const userId = decoded.userId;
+
+          // 2. Validate File Size (5MB = 5 * 1024 * 1024 bytes)
+          const sizeInBytes = (imageData.length * 3) / 4;
+          if (sizeInBytes > 5 * 1024 * 1024) {
+            return ws.send(JSON.stringify({ type: 'error', message: 'File size exceeds 5MB limit' }));
+          }
+
+          // 3. Upload to Cloudinary
+          cloudinaryUploader.upload(imageData, {
+            folder: 'codeshare_uploads',
+            resource_type: 'auto'
+          }, async (error, result) => {
+            if (error) {
+              console.error('Cloudinary Upload Error:', error);
+              return ws.send(JSON.stringify({ type: 'error', message: 'Upload failed' }));
+            }
+
+            // 4. Save to Database
+            const snippet = await Snippet.findOne({ id: snippetId });
+            if (snippet) {
+              snippet.uploads.push({
+                url: result.secure_url,
+                name: name || 'Asset',
+                public_id: result.public_id,
+                resource_type: result.resource_type
+              });
+              await snippet.save();
+            }
+
+            // 4.5. Update Room State (RAM)
+            room.uploads.push({
+              url: result.secure_url,
+              name: name || 'Uploaded Asset',
+              from: ws.userData.username,
+              resource_type: result.resource_type,
+              createdAt: new Date()
+            });
+
+            // 5. Broadcast Link to Room
+            const uploadMsg = JSON.stringify({ 
+              type: 'image_received', 
+              url: result.secure_url, 
+              name: name || 'Uploaded Asset',
+              from: ws.userData.username,
+              resource_type: result.resource_type
+            });
+            room.participants.forEach(client => {
+              if (client.readyState === 1) client.send(uploadMsg);
+            });
+          });
+        } catch (err) {
+          ws.send(JSON.stringify({ type: 'error', message: 'Unauthorized: Invalid token' }));
+        }
       }
     } catch (err) { console.error('WS Error:', err); }
   });
@@ -277,6 +346,87 @@ app.patch('/api/snippets/:id', async (req, res) => {
 
     res.json(snippet);
   } catch (err) { res.status(500).json({ error: err.message }); }
+});
+
+const axios = require('axios');
+
+// Execution Configs
+const CODEX_API = 'https://api.codex.design';
+const JUDGE0_CE_API = 'https://ce.judge0.com';
+const PISTON_PYDIS = 'https://piston.pydis.com/api/v2/execute';
+
+const EXEC_LANGS = {
+  javascript: { codex: 'js', judge: 63, piston: 'javascript' },
+  typescript: { codex: 'ts', judge: 74, piston: 'typescript' },
+  python: { codex: 'py', judge: 71, piston: 'python' },
+  cpp: { codex: 'cpp', judge: 54, piston: 'cpp' },
+  rust: { judge: 73, piston: 'rust' },
+  java: { codex: 'java', judge: 62, piston: 'java' },
+  php: { judge: 68, piston: 'php' },
+  go: { codex: 'go', judge: 60, piston: 'go' },
+  ruby: { judge: 72, piston: 'ruby' },
+  csharp: { codex: 'cs', judge: 51, piston: 'csharp' },
+  sql: { judge: 82, piston: 'sql' }
+};
+
+app.post('/api/execute', async (req, res) => {
+  const { language, content, files } = req.body;
+  const config = EXEC_LANGS[language];
+  if (!config) return res.status(400).json({ error: 'Unsupported language' });
+
+  // 1. Try Piston (PyDis or similar) - Usually fastest if open
+  if (config.piston) {
+    try {
+      const { data } = await axios.post(PISTON_PYDIS, {
+        language: config.piston,
+        version: '*',
+        files: files || [{ name: `main.${language}`, content }]
+      }, { timeout: 8000 });
+      return res.json(data.run);
+    } catch (e) { console.warn('Piston (PyDis) failed, trying extras...'); }
+  }
+
+  // 2. Try CodeX (Very stable public compiler)
+  if (config.codex) {
+    try {
+      const { data } = await axios.post(CODEX_API, {
+        language: config.codex,
+        code: content
+      }, { timeout: 8000 });
+      
+      if (data.status === 200) {
+        return res.json({
+          stdout: data.output || '',
+          stderr: data.error || '',
+          output: (data.output || '') + (data.error || ''),
+          code: data.error ? 1 : 0
+        });
+      }
+    } catch (e) { console.warn('CodeX failed, trying Judge0...'); }
+  }
+
+  // 3. Try Judge0 Community Edition
+  try {
+    const { data } = await axios.post(`${JUDGE0_CE_API}/submissions?base64_encoded=true&wait=true`, {
+      language_id: config.judge,
+      source_code: Buffer.from(content).toString('base64'),
+    }, { timeout: 10000 });
+
+    const stdout = data.stdout ? Buffer.from(data.stdout, 'base64').toString() : '';
+    const stderr = data.stderr ? Buffer.from(data.stderr, 'base64').toString() : '';
+    const compile_output = data.compile_output ? Buffer.from(data.compile_output, 'base64').toString() : '';
+    const message = data.message ? Buffer.from(data.message, 'base64').toString() : '';
+
+    return res.json({
+      stdout,
+      stderr: stderr || compile_output || message,
+      output: (stdout || '') + (stderr || compile_output || message || ''),
+      code: data.status.id === 3 ? 0 : 1
+    });
+  } catch (err) {
+    console.error('All Execution APIs failed:', err.message);
+    res.status(503).json({ error: 'Public compilers are currently congested. Please try again later.' });
+  }
 });
 
 app.delete('/api/snippets/:id', async (req, res) => {

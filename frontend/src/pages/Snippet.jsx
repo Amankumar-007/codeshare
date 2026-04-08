@@ -8,7 +8,7 @@ import TabBar from '../components/TabBar';
 import EmbedModal from '../components/EmbedModal';
 import OutputPanel from '../components/OutputPanel';
 import { executeCode } from '../utils/runner';
-import { Flame, AlertTriangle } from 'lucide-react';
+import { Flame, AlertTriangle, Image as ImageIcon, ExternalLink, X as CloseIcon, File as FileIcon } from 'lucide-react';
 import { nanoid } from 'nanoid';
 
 const API_BASE = 'http://localhost:5000/api';
@@ -34,6 +34,8 @@ export default function Snippet() {
   const [isNotFound, setIsNotFound] = useState(false);
   const [timeLeft, setTimeLeft] = useState(null);
   const [currentUser, setCurrentUser] = useState(null);
+  const [uploads, setUploads] = useState([]);
+  const [showUploads, setShowUploads] = useState(false);
 
   const activeTab = tabs.find(t => t.id === activeTabId) || tabs[0];
 
@@ -112,8 +114,20 @@ export default function Snippet() {
         const data = JSON.parse(event.data);
         if (data.type === 'init') {
           setTabs(data.files);
+          setUploads(data.uploads || []);
           setActiveTabId(data.files[0].id);
           setLoading(false);
+        } else if (data.type === 'image_received') {
+          setUploads(prev => [...prev, { 
+            url: data.url, 
+            name: data.name, 
+            from: data.from, 
+            resource_type: data.resource_type,
+            createdAt: new Date() 
+          }]);
+          setShowUploads(true);
+        } else if (data.type === 'error') {
+          alert(data.message);
         } else if (data.type === 'op') {
           setTabs(prev => prev.map(t => t.id === data.fileId ? { ...t, content: data.content } : t));
         } else if (data.type === 'tab_sync') {
@@ -237,6 +251,7 @@ export default function Snippet() {
   };
 
   const handleRun = async () => {
+    setOutput(null);
     if (['html', 'css'].includes(activeTab.language)) {
       setShowOutput(true);
       return;
@@ -245,7 +260,9 @@ export default function Snippet() {
     try {
       setShowOutput(true);
       setIsRunning(true);
-      const res = await executeCode(activeTab.language, activeTab.content);
+      // Piston runs the FIRST file in the array. We send active tab first.
+      const runFiles = [activeTab, ...tabs.filter(t => t.id !== activeTabId)];
+      const res = await executeCode(activeTab.language, runFiles);
       setOutput(res);
     } catch (err) {
       setOutput({ stderr: err.message, code: 1 });
@@ -353,6 +370,9 @@ export default function Snippet() {
         saving={saving}
         isSyncing={isSyncing}
         timeLeft={timeLeft}
+        socket={socket}
+        onShowUploads={() => setShowUploads(!showUploads)}
+        uploadCount={uploads.length}
       />
 
       <div className="flex flex-col flex-1 overflow-hidden">
@@ -399,11 +419,70 @@ export default function Snippet() {
                 output={output}
                 isRunning={isRunning}
                 onClose={() => setShowOutput(false)}
+                onClear={() => setOutput(null)}
               />
             </div>
           )}
         </div>
       </div>
+
+      {/* Floating Uploads Panel */}
+      {showUploads && (
+        <div className="fixed bottom-6 right-6 w-80 max-h-[400px] bg-zinc-900 border border-zinc-800 rounded-2xl shadow-2xl z-[60] flex flex-col overflow-hidden animate-in slide-in-from-bottom-4 duration-300">
+          <div className="p-4 border-b border-zinc-800 flex items-center justify-between bg-zinc-900/50 backdrop-blur-md">
+            <div className="flex items-center gap-2">
+              <ImageIcon className="w-4 h-4 text-blue-400" />
+              <h3 className="text-sm font-bold text-white uppercase tracking-wider">Shared Assets</h3>
+              <span className="px-1.5 py-0.5 bg-blue-500/10 text-blue-400 text-[10px] rounded-md border border-blue-500/20 font-bold">{uploads.length}</span>
+            </div>
+            <button onClick={() => setShowUploads(false)} className="p-1 hover:bg-zinc-800 rounded-lg text-zinc-500 transition-colors">
+              <CloseIcon className="w-4 h-4" />
+            </button>
+          </div>
+          
+          <div className="flex-1 overflow-y-auto p-4 space-y-3 custom-scrollbar">
+            {uploads.length === 0 ? (
+              <div className="py-8 text-center">
+                <ImageIcon className="w-10 h-10 text-zinc-800 mx-auto mb-3" />
+                <p className="text-zinc-500 text-xs font-medium">No assets shared yet</p>
+              </div>
+            ) : (
+              uploads.slice().reverse().map((upload, i) => (
+                <div key={i} className="group relative bg-zinc-800/50 border border-zinc-700/50 rounded-xl p-2 hover:border-blue-500/50 transition-all">
+                  <div className="aspect-video rounded-lg overflow-hidden mb-2 bg-black flex items-center justify-center">
+                    {upload.resource_type === 'image' ? (
+                      <img src={upload.url} alt={upload.name} className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-500" />
+                    ) : (
+                      <div className="flex flex-col items-center gap-2">
+                         <FileIcon className="w-8 h-8 text-zinc-600 group-hover:text-blue-400 transition-colors" />
+                         <span className="text-[10px] text-zinc-500 font-mono uppercase">{(upload.name || 'FILE').split('.').pop()}</span>
+                      </div>
+                    )}
+                  </div>
+                  <div className="flex items-center justify-between gap-2">
+                    <div className="min-w-0">
+                      <p className="text-[11px] font-bold text-zinc-300 truncate">{upload.name || 'Image Asset'}</p>
+                      <p className="text-[9px] text-zinc-500 font-medium">Shared by {upload.from || 'Anonymous'}</p>
+                    </div>
+                    <a 
+                      href={upload.url} 
+                      target="_blank" 
+                      rel="noopener noreferrer"
+                      className="p-1.5 bg-zinc-700 hover:bg-blue-600 rounded-lg text-zinc-300 hover:text-white transition-all"
+                    >
+                      <ExternalLink className="w-3 h-3" />
+                    </a>
+                  </div>
+                </div>
+              ))
+            )}
+          </div>
+          
+          <div className="p-3 bg-zinc-900/80 border-t border-zinc-800 text-center">
+             <p className="text-[10px] text-zinc-600 font-medium">Only logged-in users can upload</p>
+          </div>
+        </div>
+      )}
     </div>
   );
 }

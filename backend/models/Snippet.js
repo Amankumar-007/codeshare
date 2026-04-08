@@ -18,6 +18,13 @@ const SnippetSchema = new mongoose.Schema({
   forkOf: { type: String },
   viewCount: { type: Number, default: 0 },
   maxViews: { type: Number, default: 0 }, // 0 = unlimited
+  uploads: [{
+    url: { type: String, required: true },
+    name: { type: String, default: 'Asset' },
+    public_id: { type: String },
+    resource_type: { type: String, default: 'image' },
+    createdAt: { type: Date, default: Date.now }
+  }],
   createdAt: { type: Date, default: Date.now }
 });
 

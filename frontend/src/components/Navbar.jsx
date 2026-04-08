@@ -1,11 +1,11 @@
 import React, { useState, useEffect } from 'react';
-import { Share2, Settings, Save, Edit3, X, Check, User, LogOut, GitFork, Copy, Code, Eye, Play, Flame, Clock } from 'lucide-react';
+import { Share2, Settings, Save, Edit3, X, Check, User, LogOut, GitFork, Copy, Code, Eye, Play, Flame, Clock, Image as ImageIcon, Upload } from 'lucide-react';
 import LangSelector from './LangSelector';
 import ExpiryMenu from './ExpiryMenu';
 import { useNavigate, Link } from 'react-router-dom';
 import axios from 'axios';
 
-export default function Navbar({ id, onIdChange, language, onLangChange, expiry, maxViews, onExpiryChange, onSave, saving, onFork, onEmbed, onRun, users, isSyncing, timeLeft }) {
+export default function Navbar({ id, onIdChange, language, onLangChange, expiry, maxViews, onExpiryChange, onSave, saving, onFork, onEmbed, onRun, users, isSyncing, timeLeft, socket, onShowUploads, uploadCount }) {
   const [editingId, setEditingId] = useState(false);
   const [newId, setNewId] = useState(id);
   const [idAvailable, setIdAvailable] = useState(true);
@@ -48,6 +48,35 @@ export default function Navbar({ id, onIdChange, language, onLangChange, expiry,
   const handleIdSubmit = () => {
     if (idAvailable && newId !== id) onIdChange(newId);
     setEditingId(false);
+  };
+
+  const handleFileUpload = (e) => {
+    const file = e.target.files[0];
+    if (!file) return;
+
+    // Validate size (5MB)
+    if (file.size > 5 * 1024 * 1024) {
+      alert('File size exceeds 5MB limit');
+      return;
+    }
+
+    const reader = new FileReader();
+    reader.onload = () => {
+      const base64Data = reader.result;
+      const token = localStorage.getItem('token');
+      
+      if (socket?.readyState === WebSocket.OPEN) {
+        socket.send(JSON.stringify({
+          type: 'image_upload',
+          token,
+          imageData: base64Data,
+          name: file.name
+        }));
+      }
+    };
+    reader.readAsDataURL(file);
+    // Reset file input
+    e.target.value = null;
   };
 
   return (
@@ -158,6 +187,39 @@ export default function Navbar({ id, onIdChange, language, onLangChange, expiry,
             >
               <GitFork className="w-4 h-4 text-purple-400 group-hover:rotate-12 transition-transform" />
               Fork
+            </button>
+
+            <div className="h-6 w-px bg-gray-700 mx-1" />
+
+            {currentUser && (
+              <>
+                <input
+                  type="file"
+                  id="image-upload"
+                  className="hidden"
+                  onChange={handleFileUpload}
+                />
+                <label
+                  htmlFor="image-upload"
+                  title="Upload Image Asset"
+                  className="p-2 hover:bg-zinc-800 rounded-lg transition-all bg-zinc-800/50 border border-zinc-700/50 group cursor-pointer"
+                >
+                  <Upload className="w-4 h-4 text-emerald-400 group-hover:scale-110 transition-transform" />
+                </label>
+              </>
+            )}
+
+            <button
+              onClick={onShowUploads}
+              title="View Shared Assets"
+              className="relative p-2 hover:bg-zinc-800 rounded-lg transition-all bg-zinc-800/50 border border-zinc-700/50 group"
+            >
+              <ImageIcon className="w-4 h-4 text-blue-400 group-hover:scale-110 transition-transform" />
+              {uploadCount > 0 && (
+                <span className="absolute -top-1 -right-1 w-4 h-4 bg-blue-600 text-[9px] font-black rounded-full flex items-center justify-center border border-[#0d1117] animate-in zoom-in duration-300">
+                  {uploadCount}
+                </span>
+              )}
             </button>
 
             <div className="h-6 w-px bg-gray-700 mx-1" />
