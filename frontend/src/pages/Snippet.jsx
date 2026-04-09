@@ -388,25 +388,25 @@ export default function Snippet() {
           onTabRename={handleTabRename}
         />
         
-        <div className="flex-1 flex overflow-hidden">
-          <div className={`flex-1 transition-all duration-300 ${showOutput ? 'w-1/2' : 'w-full'}`}>
+        <div className="flex-1 flex flex-col lg:flex-row overflow-hidden">
+          <div className={`flex-1 transition-all duration-300 ${showOutput ? 'h-1/2 lg:h-full lg:w-1/2' : 'h-full w-full'}`}>
             <Editor value={activeTab.content} language={activeTab.language} onChange={handleEditorChange} />
           </div>
 
           {isBurned && (
             <div className="fixed inset-0 z-[100] bg-[#0d1117]/95 backdrop-blur-sm flex items-center justify-center animate-in fade-in duration-500">
-              <div className="max-w-md w-full bg-red-500/10 border border-red-500/50 rounded-2xl p-8 text-center shadow-2xl shadow-red-500/10 scale-in-center">
+              <div className="max-w-md w-full bg-red-500/10 border border-red-500/50 rounded-2xl p-8 text-center shadow-2xl shadow-red-500/10 scale-in-center mx-4">
                 <div className="w-16 h-16 bg-red-500 rounded-full flex items-center justify-center mx-auto mb-6 shadow-lg shadow-red-500/20">
                   <Flame className="w-8 h-8 text-white animate-pulse" />
                 </div>
                 <h1 className="text-2xl font-bold text-white mb-4 uppercase tracking-wider">Snippet Burned</h1>
-                <p className="text-gray-400 mb-8 leading-relaxed">
+                <p className="text-gray-400 mb-8 leading-relaxed text-sm">
                   This snippet has been securely and permanently deleted from our servers.
                   Zero traces remain in memory or on disk.
                 </p>
                 <button
                   onClick={() => navigate('/')}
-                  className="px-6 py-2 bg-white text-black hover:bg-gray-200 rounded-xl font-bold transition-all active:scale-95"
+                  className="w-full py-3 bg-white text-black hover:bg-gray-200 rounded-xl font-bold transition-all active:scale-95"
                 >
                   Go Home
                 </button>
@@ -415,7 +415,7 @@ export default function Snippet() {
           )}
 
           {showOutput && (
-            <div className="w-1/2 animate-in slide-in-from-right duration-300">
+            <div className="h-1/2 lg:h-full lg:w-1/2 border-t lg:border-t-0 lg:border-l border-white/10 animate-in slide-in-from-bottom lg:slide-in-from-right duration-300">
               <OutputPanel
                 type={activeTab.language}
                 content={activeTab.content}

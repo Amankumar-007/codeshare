@@ -1,6 +1,16 @@
 @import "tailwindcss";
 
 @layer base {
+  :root {
+    --glass-bg: rgba(13, 17, 23, 0.7);
+    --glass-border: rgba(255, 255, 255, 0.1);
+  }
+
+  body {
+    @apply bg-[#0d1117] text-white antialiased;
+    overflow-x: hidden;
+  }
+
   .cm-link {
     color: #60a5fa !important; /* blue-400 */
     text-decoration: underline !important;
@@ -18,5 +28,37 @@
   /* Make sure internal CM styles don't overwrite our pointer cursor */
   .cm-editor {
     cursor: auto;
+  }
+}
+
+@layer utilities {
+  .glass {
+    @apply backdrop-blur-md bg-[#0d1117]/70 border border-white/10;
+  }
+  
+  .glass-dark {
+    @apply backdrop-blur-xl bg-black/40 border border-white/5;
+  }
+
+  .animate-spin-slow {
+    animation: spin 3s linear infinite;
+  }
+
+  @keyframes spin {
+    from { transform: rotate(0deg); }
+    to { transform: rotate(360deg); }
+  }
+
+  .custom-scrollbar::-webkit-scrollbar {
+    width: 6px;
+    height: 6px;
+  }
+
+  .custom-scrollbar::-webkit-scrollbar-track {
+    background: transparent;
+  }
+
+  .custom-scrollbar::-webkit-scrollbar-thumb {
+    @apply bg-zinc-800 rounded-full hover:bg-zinc-700 transition-colors;
   }
 }
