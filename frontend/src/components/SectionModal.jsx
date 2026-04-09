@@ -19,7 +19,7 @@ export default function SectionModal({ isOpen, onClose, user }) {
   const fetchSnippets = async () => {
     try {
       setLoading(true);
-      const { data } = await axios.get(`http://localhost:5000/api/users/${user.username}`);
+      const { data } = await axios.get(`${import.meta.env.VITE_API_BASE_URL}/users/${user.username}`);
       setSnippets(data.snippets || []);
     } catch (err) {
       console.error('Error fetching snippets:', err);
@@ -30,7 +30,7 @@ export default function SectionModal({ isOpen, onClose, user }) {
 
   const handleCreateNew = async () => {
     try {
-      const { data } = await axios.post('http://localhost:5000/api/snippets', {
+      const { data } = await axios.post(`${import.meta.env.VITE_API_BASE_URL}/snippets`, {
         author: user.id || user._id,
         title: 'New Snippet'
       });

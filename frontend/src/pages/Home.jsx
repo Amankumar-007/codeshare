@@ -6,6 +6,8 @@ import SectionModal from '../components/SectionModal';
 import { useNavigate, Link } from 'react-router-dom';
 import axios from 'axios';
 
+const API_BASE = import.meta.env.VITE_API_BASE_URL;
+
 export default function CodeShareBento() {
   const containerRef = useRef(null);
   const [isModalOpen, setIsModalOpen] = useState(false);
@@ -23,7 +25,7 @@ export default function CodeShareBento() {
     } else {
       // Guest flow: Create new and navigate
       try {
-        const { data } = await axios.post('http://localhost:5000/api/snippets', {
+        const { data } = await axios.post(`${API_BASE}/snippets`, {
           title: 'Guest Session'
         });
         navigate(`/${data.id}`);

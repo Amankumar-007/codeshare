@@ -11,7 +11,8 @@ import { executeCode } from '../utils/runner';
 import { Flame, AlertTriangle, Image as ImageIcon, ExternalLink, X as CloseIcon, File as FileIcon } from 'lucide-react';
 import { nanoid } from 'nanoid';
 
-const API_BASE = 'http://localhost:5000/api';
+const API_BASE = import.meta.env.VITE_API_BASE_URL;
+const WS_BASE = import.meta.env.VITE_WS_URL;
 
 export default function Snippet() {
   const { id } = useParams();
@@ -109,7 +110,7 @@ export default function Snippet() {
 
     const connect = () => {
       if (!isMounted) return;
-      ws = new WebSocket(`ws://localhost:5000/${id}`);
+      ws = new WebSocket(`${WS_BASE}/${id}`);
       setSocket(ws);
 
       ws.onmessage = (event) => {

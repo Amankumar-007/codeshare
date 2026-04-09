@@ -9,6 +9,8 @@ import {
 import Navbar from '../components/Navbar';
 import { motion, AnimatePresence } from 'framer-motion';
 
+const API_BASE = import.meta.env.VITE_API_BASE_URL;
+
 export default function Profile() {
   const { username } = useParams();
   const navigate = useNavigate();
@@ -46,7 +48,7 @@ export default function Profile() {
     const fetchProfile = async () => {
       setLoading(true);
       try {
-        const { data } = await axios.get(`http://localhost:5000/api/users/${username}`);
+        const { data } = await axios.get(`${API_BASE}/users/${username}`);
         setProfile(data.user);
         setSnippets(data.snippets);
         // Initialize edit form
@@ -75,7 +77,7 @@ export default function Profile() {
     try {
       setIsUpdating(true);
       const token = localStorage.getItem('token');
-      const { data } = await axios.patch(`http://localhost:5000/api/users/${username}`, {
+      const { data } = await axios.patch(`${API_BASE}/users/${username}`, {
         ...editForm,
         skills: editForm.skills.split(',').map(s => s.trim()).filter(s => s !== '')
       }, {
@@ -106,7 +108,7 @@ export default function Profile() {
     if (!newTitle.trim()) return setEditingId(null);
     try {
       setIsUpdating(true);
-      await axios.patch(`http://localhost:5000/api/snippets/${id}`, { title: newTitle });
+      await axios.patch(`${API_BASE}/snippets/${id}`, { title: newTitle });
       setSnippets(snippets.map(s => s.id === id ? { ...s, title: newTitle } : s));
       setEditingId(null);
     } catch (err) {
@@ -119,7 +121,7 @@ export default function Profile() {
   const handleDelete = async (id) => {
     try {
       setIsUpdating(true);
-      await axios.delete(`http://localhost:5000/api/snippets/${id}`);
+      await axios.delete(`${API_BASE}/snippets/${id}`);
       setSnippets(snippets.filter(s => s.id !== id));
       setDeletingId(null);
     } catch (err) {

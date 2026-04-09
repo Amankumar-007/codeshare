@@ -13,7 +13,7 @@ export default function Embed() {
   useEffect(() => {
     const fetchSnippet = async () => {
       try {
-        const { data } = await axios.get(`http://localhost:5000/api/snippets/${id}`);
+        const { data } = await axios.get(`${import.meta.env.VITE_API_BASE_URL}/snippets/${id}`);
         setContent(data.content);
       } catch (err) {
         console.error('Embed load failed', err);

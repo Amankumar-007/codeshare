@@ -18,10 +18,10 @@ export default function Auth() {
     e.preventDefault();
     setError('');
     setLoading(true);
-    const endpoint = isLogin ? '/api/auth/login' : '/api/auth/register';
+    const endpoint = isLogin ? '/auth/login' : '/auth/register';
 
     try {
-      const { data } = await axios.post(`http://localhost:5000${endpoint}`, formData);
+      const { data } = await axios.post(`${import.meta.env.VITE_API_BASE_URL}${endpoint}`, formData);
       localStorage.setItem('token', data.token);
       localStorage.setItem('user', JSON.stringify(data.user));
       navigate('/');

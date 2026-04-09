@@ -40,7 +40,7 @@ export default function Navbar({ id, onIdChange, language, onLangChange, expiry,
     setNewId(val);
     if (val === id) return setIdAvailable(true);
     try {
-      const { data } = await axios.get(`http://localhost:5000/api/snippets/check/${val}`);
+      const { data } = await axios.get(`${import.meta.env.VITE_API_BASE_URL}/snippets/check/${val}`);
       setIdAvailable(data.available);
     } catch (e) { setIdAvailable(false); }
   };
